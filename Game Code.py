@@ -166,16 +166,14 @@ def createStateValues(playersCard, dealersCards):
 #This is where the "learning" is taking place
 def setQ(Q, currentEpisode, gamma, alpha):
     for t in range(len(currentEpisode)):
-        #episode[t+1:,2] gives all the rewards in the episode from t+1 onwords
-        rewards = currentEpisode[t:,2]
-        #Create a list with the gamma rate increasing
-        discountRate = [gamma**i for i in range(1,len(rewards)+1)]
-        #Discounting the rewards from t+1 onwards
-        updatedReward = rewards*discountRate
-        #Summing up the discounted rewards to equal the return at time step t
-        Gt = np.sum(updatedReward)
-        #Calculating the actual Q table value of the state, actionn pair. 
-        Q[currentEpisode[t][0]][currentEpisode[t][1]] += alpha *(Gt - Q[currentEpisode[t][0]][currentEpisode[t][1]])
+        state, action, reward = currentEpisode[t]
+        
+        # Calculate discounted future rewards
+        Gt = sum([gamma**i * currentEpisode[t+i][2] for i in range(1, len(currentEpisode)-t)])
+        
+        # Update Q-value
+        Q[state][action] += alpha * (Gt - Q[state][action])
+    
     return Q
 
 #The actual main method
@@ -299,7 +297,7 @@ def main():
             currentEpisode.append((currentState, action, reward))
             
             if gameOver:
-                currentEpisode = np.array(currentEpisode)
+                #currentEpisode = np.array(currentEpisode)
                 Q = setQ(Q, currentEpisode, gamma, alpha)
                 currentEpisode= []
         
